@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MindMax — Home</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      background: #1a1a1a;
+      display: flex;
+      justify-content: center;
+      padding: 40px 20px 80px;
+    }
+
+    /* ─────────────────────────────────────────
+       Device shell  402 × 1207 px  r=60
+    ───────────────────────────────────────── */
+    .device {
+      width: 402px;
+      height: 1207px;
+      background: #000;
+      border-radius: 60px;
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    /* ─── Dynamic Island  124×35 @ x=139, y=14 ─── */
+    .dynamic-island {
+      position: absolute;
+      top: 14px;
+      left: 139px;
+      width: 124px;
+      height: 35px;
+      background: #000;
+      border-radius: 35px;
+      z-index: 30;
+    }
+
+    /* ─── Status bar  h=50 ─── */
+    .status-bar {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 50px;
+      z-index: 25;
+      pointer-events: none;
+    }
+    /* Time: x=56, y=21  SF Pro Semibold 17px */
+    .status-time {
+      position: absolute;
+      left: 56px;
+      top: 21px;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 22px;
+      color: #fff;
+    }
+    /* Right cluster: Levels frame absolute x=263,y=25.5; icons end at x≈366 → right=36px */
+    .status-right {
+      position: absolute;
+      right: 36px;
+      top: 25.5px;
+      display: flex;
+      align-items: flex-start;
+      gap: 7px;
+    }
+    .signal {
+      display: flex;
+      align-items: flex-end;
+      gap: 1.5px;
+      height: 11px;
+    }
+    .signal span {
+      display: block;
+      width: 3px;
+      border-radius: 1px;
+      background: #fff;
+    }
+    /* Battery  27×13 */
+    .battery {
+      width: 27px;
+      height: 13px;
+      position: relative;
+    }
+    .battery-border {
+      position: absolute;
+      left: 0; top: 0;
+      width: 25px; height: 13px;
+      border: 1.5px solid rgba(255,255,255,0.5);
+      border-radius: 4.3px;
+    }
+    .battery-fill {
+      position: absolute;
+      left: 2px; top: 2px;
+      width: 21px; height: 9px;
+      background: #fff;
+      border-radius: 2.5px;
+    }
+    .battery-cap {
+      position: absolute;
+      right: 0; top: 3.5px;
+      width: 2px; height: 6px;
+      background: rgba(255,255,255,0.4);
+      border-radius: 1px;
+    }
+
+    /* ─── Top gradient  h=67 — sits above hero ─── */
+    .top-gradient {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 67px;
+      background: linear-gradient(to bottom, #000 0%, #000 79.33%, transparent 100%);
+      z-index: 20;
+      pointer-events: none;
+    }
+
+    /* ─── Scrollable content ─── */
+    .scroll {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .scroll::-webkit-scrollbar { display: none; }
+
+    /* ─────────────────────────────────────────
+       HERO  y=60
+    ───────────────────────────────────────── */
+    .hero-section {
+      padding-top: 60px;
+    }
+    /* card: x=12, w=379, h=212, r=12 */
+    .hero-card {
+      margin: 0 12px;
+      height: 212px;
+      border-radius: 12px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* ── YouTube background embed ── */
+    .hero-yt {
+      position: absolute;
+      /* extend beyond card edges to crop YouTube chrome */
+      top: -30px; left: -2px;
+      width: calc(100% + 4px);
+      height: calc(100% + 60px);
+      border: none;
+      pointer-events: none;
+    }
+    /* overlay pill: x=84 (from card), y=60.5 (from card), w=211, h=91, r=21 */
+    .hero-overlay {
+      position: absolute;
+      left: 84px;
+      top: 60.5px;
+      width: 211px;
+      height: 91px;
+      background: rgba(109, 105, 105, 0.30);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-radius: 21px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+    }
+    /* "Tomorrows MindMax"  Outfit SemiBold 17px white */
+    .hero-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 17px;
+      font-weight: 600;
+      color: #fff;
+      letter-spacing: 0.068px;
+      line-height: 18.36px;
+      white-space: nowrap;
+    }
+    .hero-countdown-row {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    /* "13h 45m 16s"  Outfit SemiBold 22px white */
+    .hero-countdown {
+      font-family: 'Outfit', sans-serif;
+      font-size: 22px;
+      font-weight: 600;
+      color: #fff;
+      line-height: 26.4px;
+    }
+
+    /* ─────────────────────────────────────────
+       CHAT  y=288
+    ───────────────────────────────────────── */
+    .chat-section {
+      padding: 16px 16px 0;
+    }
+    .chat-speaker {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-bottom: 12px;
+    }
+    /* avatar  32×32  r=42.857 → circular */
+    .avatar {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      overflow: hidden;
+      flex-shrink: 0;
+      background: #5a4a3a;
+    }
+    .avatar img, .avatar svg {
+      width: 100%; height: 100%;
+      object-fit: cover;
+    }
+    /* "Bertrand"  SF Pro Display Semibold 14px #b8b8b8  ls=0.28 */
+    .speaker-name {
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: #b8b8b8;
+      letter-spacing: 0.28px;
+      line-height: 19.18px;
+    }
+    /* Message body  SF Pro Display Regular 16px white  ls=0.16  lh=22.4 */
+    .chat-message {
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 16px;
+      font-weight: 400;
+      color: #fff;
+      letter-spacing: 0.16px;
+      line-height: 22.4px;
+    }
+    .chat-message u {
+      text-decoration-color: rgba(255,255,255,0.7);
+      text-underline-offset: 2px;
+      text-decoration-thickness: 1px;
+    }
+    .chat-para { display: block; }
+    .chat-para + .chat-para { margin-top: 9px; }
+
+    /* ─────────────────────────────────────────
+       PRIMARY BUTTON  x=24, y=580, w=355, h=56, r=32, bg=#c9c9c9
+    ───────────────────────────────────────── */
+    .button-area {
+      padding: 28px 24px 0;
+    }
+    .primary-btn {
+      width: 100%;
+      height: 56px;
+      background: #c9c9c9;
+      border-radius: 32px;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+    /* "Adjust tomorrow"  Outfit Medium 17px black */
+    .btn-text {
+      font-family: 'Outfit', sans-serif;
+      font-size: 17px;
+      font-weight: 500;
+      color: #000;
+      line-height: 18.36px;
+    }
+
+    /* ─────────────────────────────────────────
+       QUIZ SECTION  header y=668, card y=715, h=388, r=12
+    ───────────────────────────────────────── */
+    .quiz-section {
+      padding-top: 32px;
+    }
+    .section-header {
+      display: flex;
+      align-items: center;
+      padding: 8px 12px;
+      margin-bottom: 7px;
+    }
+    /* "Quiz of the Day"  Outfit SemiBold 20px white  ls=0.2 */
+    .section-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 20px;
+      font-weight: 600;
+      color: #fff;
+      letter-spacing: 0.2px;
+      line-height: 23.2px;
+    }
+    .disclosure {
+      margin-left: auto;
+      color: #c9c9c9;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 18px;
+      font-weight: 400;
+      line-height: 1;
+    }
+    .quiz-card {
+      margin: 0 12px;
+      height: 388px;
+      border-radius: 12px;
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(160deg, #1565c0 0%, #1976d2 40%, #42a5f5 100%);
+    }
+    .quiz-bg-img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    /* Overlay: bottom=0, h=102, bg=rgba(44,44,44,0.55) + blur */
+    .quiz-overlay {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 102px;
+      background: rgba(44, 44, 44, 0.55);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+    .quiz-overlay-inner {
+      padding: 16px 12px 0;
+    }
+    /* Quiz title  Outfit SemiBold 17px white  ls=0.068 */
+    .quiz-card-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 17px;
+      font-weight: 600;
+      color: #fff;
+      letter-spacing: 0.068px;
+      line-height: 18.36px;
+      margin-bottom: 6px;
+    }
+    .stats-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .stat-group {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    /* Stats text  Outfit SemiBold 12px white  ls=0.24 */
+    .stat-label {
+      font-family: 'Outfit', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      color: #fff;
+      letter-spacing: 0.24px;
+      line-height: 14.4px;
+    }
+    .stat-dot {
+      width: 2px; height: 2px;
+      background: #d9d9d9;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    /* Action icons  share x=316, ellipsis x=349 (from quiz overlay left) */
+    .quiz-actions {
+      position: absolute;
+      bottom: 16px;
+      right: 12px;
+      display: flex;
+      align-items: center;
+      gap: 17px;
+    }
+
+    /* ─────────────────────────────────────────
+       TAB BAR  402×171  absolute bottom=0
+       — gradient + lesson player + tabs
+    ───────────────────────────────────────── */
+    .tab-bar {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 171px;
+      /* Outer gradient: transparent → #0d0d0ddf → #000 */
+      background: linear-gradient(to bottom,
+        rgba(102,102,102,0) 0%,
+        rgba(13,13,13,0) 18.75%,
+        rgba(13,13,13,0.87) 38.94%,
+        #000 100%);
+      pointer-events: none;
+    }
+    .tab-bar > * { pointer-events: auto; }
+
+    /* Lesson Player banner:
+       container y=2597, frame y=2605 → relative to tab bar (y=2581): top=16 banner top=24
+       Banner: x=12, w=378, h=56, r=12, bg=#292929 */
+    .lesson-player {
+      position: absolute;
+      top: 16px;
+      left: 0; right: 0;
+      height: 72px;
+    }
+    .lesson-banner {
+      position: absolute;
+      left: 12px; right: 12px;
+      top: 8px;
+      height: 56px;
+      background: #292929;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      padding: 0 8px;
+      gap: 8px;
+    }
+    /* Thumbnail: 40×40 r=8 bg=rgba(255,255,255,0.08) border=rgba(0,0,0,0.08) */
+    .lesson-thumb {
+      width: 40px; height: 40px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(0,0,0,0.08);
+      flex-shrink: 0;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .lesson-details {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+    /* Lesson title  Outfit Medium 15px white */
+    .lesson-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 15px;
+      font-weight: 500;
+      color: #fff;
+      line-height: 18.6px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    /* Lesson subtitle  Outfit Regular 13px #b8b8b8  ls=0.26 */
+    .lesson-subtitle {
+      font-family: 'Outfit', sans-serif;
+      font-size: 13px;
+      font-weight: 400;
+      color: #b8b8b8;
+      letter-spacing: 0.26px;
+      line-height: 17.81px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    /* Play control  24×24 */
+    .lesson-play {
+      width: 24px; height: 24px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Tab items row: Content y=2669, relative to tab bar (y=2581): top=88 */
+    .tab-items {
+      position: absolute;
+      top: 88px;
+      left: 0; right: 0;
+      height: 49px;
+      display: flex;
+    }
+    .tab-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 3px;
+      gap: 2px;
+    }
+    .tab-item-icon {
+      width: 28px; height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    /* Tab labels  Outfit Regular 12px  ls=0.24 */
+    .tab-label {
+      font-family: 'Outfit', sans-serif;
+      font-size: 12px;
+      font-weight: 400;
+      color: #fff;
+      letter-spacing: 0.24px;
+      line-height: 14.4px;
+    }
+    .tab-label.muted { color: rgba(255,255,255,0.5); }
+
+    /* Home indicator  x=129, y=158 from tab bar top, w=144, h=5, r=100 */
+    .home-indicator {
+      position: absolute;
+      top: 158px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 144px; height: 5px;
+      background: #fff;
+      border-radius: 100px;
+    }
+
+    /* bottom scroll pad so quiz card isn't hidden under tab bar */
+    .scroll-pad { height: 171px; }
+  </style>
+</head>
+<body>
+<div class="device">
+
+  <!-- Dynamic Island -->
+  <div class="dynamic-island"></div>
+
+  <!-- Top black gradient (above content, below status bar) -->
+  <div class="top-gradient"></div>
+
+  <!-- Status Bar -->
+  <div class="status-bar">
+    <div class="status-time">9:41</div>
+    <div class="status-right">
+      <!-- Cellular  19.2×12.2px  (4 bars increasing height) -->
+      <svg width="19" height="12" viewBox="0 0 19 12" fill="white">
+        <rect x="0"    y="8.5" width="4" height="3.5" rx="0.5" opacity=".35"/>
+        <rect x="5"    y="5.5" width="4" height="6.5" rx="0.5" opacity=".55"/>
+        <rect x="10"   y="2.5" width="4" height="9.5" rx="0.5" opacity=".8"/>
+        <rect x="15"   y="0"   width="4" height="12"  rx="0.5"/>
+      </svg>
+      <!-- Wifi  17.1×12.3px -->
+      <svg width="17" height="12" viewBox="0 0 17 12" fill="none">
+        <circle cx="8.5" cy="10.8" r="1.3" fill="white"/>
+        <path d="M5.1 7.9a4.8 4.8 0 0 1 6.8 0" stroke="white" stroke-width="1.4" stroke-linecap="round"/>
+        <path d="M2 4.7a9 9 0 0 1 13 0" stroke="white" stroke-width="1.4" stroke-linecap="round" opacity=".75"/>
+      </svg>
+      <!-- Battery  25×13px border + 21×9px fill + 1.3×4px cap -->
+      <div class="battery">
+        <div class="battery-border"></div>
+        <div class="battery-fill"></div>
+        <div class="battery-cap"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ Scrollable content ══ -->
+  <div class="scroll">
+
+    <!-- HERO CARD  y=60, h=212, r=12 -->
+    <div class="hero-section">
+      <div class="hero-card">
+        <!-- YouTube cloud video — muted autoplay loop, chrome cropped by scale -->
+        <iframe
+          class="hero-yt"
+          src="https://www.youtube.com/embed/KaWjVszmKOI?autoplay=1&mute=1&loop=1&playlist=KaWjVszmKOI&controls=0&rel=0&modestbranding=1&iv_load_policy=3&disablekb=1&fs=0&playsinline=1"
+          allow="autoplay; encrypted-media"
+          allowfullscreen
+          title="Cloud background"
+        ></iframe>
+        <!-- Frosted glass pill: left=84, top=60.5, w=211, h=91, r=21 -->
+        <div class="hero-overlay">
+          <div class="hero-title">Tomorrows MindMax</div>
+          <div class="hero-countdown-row">
+            <!-- lock.fill  SF Pro Semibold 16px — SVG substitute -->
+            <svg width="13" height="16" viewBox="0 0 13 16" fill="none">
+              <rect x="1" y="7" width="11" height="8" rx="2" fill="white"/>
+              <path d="M3.5 7.5V5a3 3 0 0 1 6 0v2.5" stroke="white" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+              <circle cx="6.5" cy="11.2" r="1.2" fill="#5a5a5a"/>
+            </svg>
+            <span class="hero-countdown">13h 45m 16s</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHAT  y=288 -->
+    <div class="chat-section">
+      <div class="chat-speaker">
+        <!-- Avatar  32×32  circular — oil-painting portrait placeholder -->
+        <div class="avatar">
+          <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+            <rect width="32" height="32" fill="#7a6250"/>
+            <ellipse cx="16" cy="13" rx="5.5" ry="6" fill="#c9a87c"/>
+            <ellipse cx="16" cy="32" rx="12" ry="9" fill="#c9a87c"/>
+            <ellipse cx="16" cy="9" rx="5.8" ry="4.5" fill="#4a3728"/>
+            <ellipse cx="10.5" cy="13" rx="1.5" ry="4" fill="#4a3728"/>
+            <ellipse cx="21.5" cy="13" rx="1.5" ry="4" fill="#4a3728"/>
+          </svg>
+        </div>
+        <!-- "Bertrand"  SF Pro Display Semibold 14px #b8b8b8 -->
+        <span class="speaker-name">Bertrand</span>
+      </div>
+      <!-- Message  SF Pro Display Regular 16px white  — exact Figma text, 2 paragraphs -->
+      <div class="chat-message">
+        <span class="chat-para">Great work completing today's MindMax James.&nbsp;&nbsp;We learnt about <u>confirming bias</u> and <u>evidence weighting</u>, let me know if you want to go deeper in either.</span>
+        <span class="chat-para">Tomorrow we'll focus on something your brain does every morning - a hidden pattern that most people never notice, but once you do, you can't unsee see it.&nbsp;&nbsp;&nbsp;If you'd prefer to focus on something else tomorrow, just let me know.</span>
+      </div>
+    </div>
+
+    <!-- PRIMARY BUTTON  x=24, y=580, w=355, h=56, r=32 -->
+    <div class="button-area">
+      <button class="primary-btn">
+        <!-- wand.and.sparkles  SF Pro Semibold 17px — SVG substitute -->
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+          <!-- wand stick diagonal -->
+          <path d="M4.5 17.5L13 9" stroke="#000" stroke-width="2.5" stroke-linecap="round"/>
+          <!-- wand tip -->
+          <path d="M13 9L14.5 7.5" stroke="#000" stroke-width="2.2" stroke-linecap="round"/>
+          <!-- large 4-point sparkle top-right -->
+          <path d="M17 2v2.8M17 8.2V11" stroke="#000" stroke-width="1.7" stroke-linecap="round"/>
+          <path d="M14 6.5h2.8M19.2 6.5H22" stroke="#000" stroke-width="1.7" stroke-linecap="round"/>
+          <path d="M15.1 3.7l1.4 1.4M18.5 7.1l1.4 1.4M18.5 3.7l-1.4 1.4M15.1 7.1l-1.4 1.4" stroke="#000" stroke-width="1.2" stroke-linecap="round"/>
+          <!-- small sparkle -->
+          <path d="M9.5 3.5v2M9.5 7v1.5M8 5.5h2M11 5.5h2" stroke="#000" stroke-width="1" stroke-linecap="round" opacity=".65"/>
+        </svg>
+        <span class="btn-text">Adjust tomorrow</span>
+      </button>
+    </div>
+
+    <!-- QUIZ SECTION  header y=668, card y=715 -->
+    <div class="quiz-section">
+      <div class="section-header">
+        <!-- "Quiz of the Day"  Outfit SemiBold 20px white -->
+        <span class="section-title">Quiz of the Day</span>
+        <span class="disclosure">&#8250;</span>
+      </div>
+
+      <!-- Quiz card  w=378, h=388, r=12 -->
+      <div class="quiz-card">
+        <!-- YouTube-thumbnail background: closest public Unsplash substitute -->
+        <img
+          class="quiz-bg-img"
+          src="https://images.unsplash.com/photo-1528360983277-13d401cdc186?fit=crop&w=800&q=85"
+          alt="Quiz background"
+          onerror="this.style.display='none'"
+        />
+
+        <!-- Bottom overlay  h=102, rgba(44,44,44,0.55) + blur -->
+        <div class="quiz-overlay">
+          <div class="quiz-overlay-inner">
+            <!-- "Can You Decode Internet Culture?"  Outfit SemiBold 17px white -->
+            <div class="quiz-card-title">Can You Decode Internet Culture?</div>
+            <div class="stats-row">
+              <!-- checkmark.circle  SF Pro Regular 15px #c4abff -->
+              <div class="stat-group">
+                <svg width="18" height="20" viewBox="0 0 18 20" fill="none">
+                  <circle cx="9" cy="10" r="7.5" stroke="#c4abff" stroke-width="1.5"/>
+                  <path d="M5.5 10.3L8 12.5l4.5-4.5" stroke="#c4abff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <!-- "263 played so far"  Outfit SemiBold 12px white -->
+                <span class="stat-label">263 played so far</span>
+              </div>
+              <div class="stat-dot"></div>
+              <!-- star/rosette badge  SF Pro Regular 15px white -->
+              <div class="stat-group">
+                <svg width="18" height="20" viewBox="0 0 18 20" fill="none">
+                  <path d="M9 2.5l1.6 4.9H15.5l-4.1 3 1.6 4.9L9 12.4l-4 2.9 1.6-4.9-4.1-3h4.9L9 2.5z"
+                        stroke="white" stroke-width="1.3" stroke-linejoin="round" fill="none"/>
+                </svg>
+                <!-- "Average score: 7/10"  Outfit SemiBold 12px white -->
+                <span class="stat-label">Average score: 7/10</span>
+              </div>
+            </div>
+          </div>
+          <!-- Action icons: share x≈316, ellipsis x≈349 from quiz overlay left -->
+          <div class="quiz-actions">
+            <!-- square.and.arrow.up  SF Pro Semibold 15px white -->
+            <svg width="17" height="20" viewBox="0 0 17 20" fill="none">
+              <path d="M8.5 1v12" stroke="white" stroke-width="1.6" stroke-linecap="round"/>
+              <path d="M8.5 1L4.5 5M8.5 1l4 4" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M1 11v6a1 1 0 0 0 1 1h13a1 1 0 0 0 1-1v-6" stroke="white" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+            <!-- ellipsis  SF Pro Semibold 15px white -->
+            <svg width="17" height="20" viewBox="0 0 17 20" fill="none">
+              <circle cx="2.5" cy="10" r="1.5" fill="white"/>
+              <circle cx="8.5" cy="10" r="1.5" fill="white"/>
+              <circle cx="14.5" cy="10" r="1.5" fill="white"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="scroll-pad"></div>
+    </div><!-- /quiz-section -->
+  </div><!-- /scroll -->
+
+  <!-- ══════════════════════════════════════
+       TAB BAR  402×171  y=1036 from top
+       Gradient + Lesson Player + Tabs + Home Indicator
+  ══════════════════════════════════════ -->
+  <div class="tab-bar">
+
+    <!-- Lesson Player  banner: x=12, y=24 from tab bar top, w=378, h=56, r=12, bg=#292929 -->
+    <div class="lesson-player">
+      <div class="lesson-banner">
+        <!-- Thumbnail  40×40  r=8  bg=rgba(255,255,255,0.08) -->
+        <div class="lesson-thumb">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <rect width="20" height="20" rx="4" fill="rgba(255,255,255,0.1)"/>
+            <path d="M7 5l9 5-9 5V5z" fill="rgba(255,255,255,0.4)"/>
+          </svg>
+        </div>
+        <!-- Details -->
+        <div class="lesson-details">
+          <div class="lesson-title">The AI Art Revolution</div>
+          <div class="lesson-subtitle">Can AI Make Real Art?</div>
+        </div>
+        <!-- Play button  24×24 -->
+        <div class="lesson-play">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M8 5l11 7-11 7V5z" fill="white"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab items  y=2669, relative to tab bar y=2581: top=88 -->
+    <div class="tab-items">
+
+      <!-- Home — ACTIVE  house.fill  SF Pro Semibold 17px white -->
+      <div class="tab-item">
+        <div class="tab-item-icon">
+          <!-- house.fill -->
+          <svg width="25" height="22" viewBox="0 0 25 22" fill="white">
+            <path d="M1.5 10.5L12.5 2L23.5 10.5V21H16.5V15H8.5V21H1.5V10.5Z"/>
+          </svg>
+        </div>
+        <span class="tab-label">Home</span>
+      </div>
+
+      <!-- Create — inactive  plus.square  SF Pro Semibold 17px 50% white -->
+      <div class="tab-item">
+        <div class="tab-item-icon">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+            <rect x="1.5" y="1.5" width="19" height="19" rx="4" stroke="rgba(255,255,255,0.5)" stroke-width="1.6"/>
+            <path d="M11 7v8M7 11h8" stroke="rgba(255,255,255,0.5)" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <span class="tab-label muted">Create</span>
+      </div>
+
+      <!-- My Learning — inactive  graduationcap.fill  SF Pro Semibold 17px 50% white -->
+      <div class="tab-item">
+        <div class="tab-item-icon">
+          <svg width="28" height="22" viewBox="0 0 28 22" fill="none">
+            <path d="M14 2L2 8.5L14 15L26 8.5L14 2Z" stroke="rgba(255,255,255,0.5)" stroke-width="1.6" stroke-linejoin="round" fill="rgba(255,255,255,0.08)"/>
+            <path d="M6.5 12.5v5.5S9.5 21 14 21s7.5-3 7.5-3v-5.5" stroke="rgba(255,255,255,0.5)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M26 8.5v6" stroke="rgba(255,255,255,0.5)" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <span class="tab-label muted">My Learning</span>
+      </div>
+
+    </div><!-- /tab-items -->
+
+    <!-- Home indicator  x=129, w=144, h=5, r=100  white -->
+    <div class="home-indicator"></div>
+
+  </div><!-- /tab-bar -->
+
+</div><!-- /device -->
+</body>
+</html>
