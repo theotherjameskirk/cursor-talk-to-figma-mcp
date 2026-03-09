@@ -3,654 +3,1213 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MindMax – Home</title>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <title>MindMax — Home</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&display=swap" rel="stylesheet" />
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
     body {
-      background: #0a0a0a;
       min-height: 100vh;
+      background: #1a1a1a;
       display: flex;
       justify-content: center;
       align-items: flex-start;
-      padding: 48px 24px 80px;
-      font-family: 'Outfit', sans-serif;
+      padding: 40px 20px 80px;
     }
-    .phone {
-      width: 393px;
-      height: 852px;
+
+    /* ─────────────────────────────────────────
+       Device shell  402 × 870 px  r=60
+       (iPhone 15 Pro proportions at 402px wide)
+    ───────────────────────────────────────── */
+    .device {
+      width: 402px;
+      height: 870px;
       background: #000;
-      border-radius: 54px;
-      overflow: hidden;
+      border-radius: 60px;
       position: relative;
-      box-shadow:
-        0 0 0 1px #1a1a1a,
-        0 0 0 3px #0a0a0a,
-        0 0 0 4px #2a2a2a,
-        0 60px 120px rgba(0,0,0,0.9);
+      overflow: hidden;
+      flex-shrink: 0;
     }
-    .scroll-area {
-      height: calc(852px - 108px);
-      overflow-y: scroll;
+
+    /* ─── Dynamic Island  124×35 @ x=139, y=14 ─── */
+    .dynamic-island {
+      position: absolute;
+      top: 14px;
+      left: 139px;
+      width: 124px;
+      height: 35px;
+      background: #000;
+      border-radius: 35px;
+      z-index: 30;
+    }
+
+    /* ─── Status bar  h=50 ─── */
+    .status-bar {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 50px;
+      z-index: 25;
+      pointer-events: none;
+    }
+    /* Time: x=56, y=21  SF Pro Semibold 17px */
+    .status-time {
+      position: absolute;
+      left: 56px;
+      top: 21px;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 22px;
+      color: #fff;
+    }
+    /* Right cluster: Levels frame absolute x=263,y=25.5; icons end at x≈366 → right=36px */
+    .status-right {
+      position: absolute;
+      right: 36px;
+      top: 25.5px;
+      display: flex;
+      align-items: flex-start;
+      gap: 7px;
+    }
+    .signal {
+      display: flex;
+      align-items: flex-end;
+      gap: 1.5px;
+      height: 11px;
+    }
+    .signal span {
+      display: block;
+      width: 3px;
+      border-radius: 1px;
+      background: #fff;
+    }
+    /* Battery  27×13 */
+    .battery {
+      width: 27px;
+      height: 13px;
+      position: relative;
+    }
+    .battery-border {
+      position: absolute;
+      left: 0; top: 0;
+      width: 25px; height: 13px;
+      border: 1.5px solid rgba(255,255,255,0.5);
+      border-radius: 4.3px;
+    }
+    .battery-fill {
+      position: absolute;
+      left: 2px; top: 2px;
+      width: 21px; height: 9px;
+      background: #fff;
+      border-radius: 2.5px;
+    }
+    .battery-cap {
+      position: absolute;
+      right: 0; top: 3.5px;
+      width: 2px; height: 6px;
+      background: rgba(255,255,255,0.4);
+      border-radius: 1px;
+    }
+
+    /* ─── Top gradient  h=67 — sits above hero ─── */
+    .top-gradient {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 67px;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.3) 60%, transparent 100%);
+      z-index: 20;
+      pointer-events: none;
+    }
+
+    /* ─── Scrollable content ─── */
+    .scroll {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      overflow-y: auto;
       -webkit-overflow-scrolling: touch;
     }
-    .scroll-area::-webkit-scrollbar { display: none; }
+    .scroll::-webkit-scrollbar { display: none; }
 
-    /* ── Typewriter cursor ── */
-    @keyframes blink {
-      0%, 100% { opacity: 1; }
-      50%       { opacity: 0; }
+    /* ─────────────────────────────────────────
+       HERO  y=60
+    ───────────────────────────────────────── */
+    .hero-section {
+      padding-top: 60px;
     }
-    .cursor {
-      display: inline-block;
-      width: 2px;
-      height: 1em;
-      background: #fff;
-      margin-left: 2px;
-      vertical-align: text-bottom;
-      border-radius: 1px;
-      animation: blink 0.7s step-start infinite;
-    }
-
-    /* ── Avatar talking pulse ── */
-    @keyframes avatarTalk {
-      0%   { box-shadow: 0 0 0 0 rgba(117,58,255,0); }
-      30%  { box-shadow: 0 0 0 4px rgba(117,58,255,0.55); }
-      60%  { box-shadow: 0 0 0 2px rgba(117,58,255,0.25); }
-      100% { box-shadow: 0 0 0 0 rgba(117,58,255,0); }
-    }
-    .avatar-talking {
-      animation: avatarTalk 0.35s ease-out;
+    /* card: x=12, w=379, h=212, r=12 */
+    .hero-card {
+      margin: 0 12px;
+      height: 212px;
+      border-radius: 12px;
+      position: relative;
+      overflow: hidden;
     }
 
-    /* ── Streak dot animation ── */
-    @keyframes dotPop {
-      0%   { transform: scale(0); opacity: 0; }
-      60%  { transform: scale(1.35); opacity: 1; }
-      80%  { transform: scale(0.85); }
-      100% { transform: scale(1); }
+    /* ── YouTube background embed ── */
+    .hero-yt-wrap {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
     }
-    @keyframes dotGlow {
-      0%, 100% { box-shadow: 0 0 0px rgba(242,128,26,0); }
-      50%       { box-shadow: 0 0 8px 2px rgba(242,128,26,0.7); }
+    /* Card is ~379×212 = 16:9. Scale iframe 145% to crop YouTube chrome. */
+    .hero-yt {
+      position: absolute;
+      top: 50%; left: 50%;
+      width: 155%;
+      height: 155%;
+      transform: translate(-50%, -50%);
+      border: none;
+      pointer-events: none;
     }
-    .dot-filled {
-      animation: dotPop 0.45s cubic-bezier(0.34,1.56,0.64,1) both,
-                 dotGlow 2s ease-in-out 0.5s infinite;
+    /* overlay pill: x=84 (from card), y=60.5 (from card), w=211, h=91, r=21 */
+    .hero-overlay {
+      position: absolute;
+      left: 84px;
+      top: 60.5px;
+      width: 211px;
+      height: 91px;
+      background: rgba(109, 105, 105, 0.30);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-radius: 21px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
     }
-    .dot-empty {
-      animation: dotPop 0.35s cubic-bezier(0.34,1.56,0.64,1) both;
-    }
-
-    /* ── Chip ── */
-    .chip {
-      background: rgba(102,51,178,0.5);
-      border-radius: 11px;
-      padding: 4px 12px;
-      color: #e5ccff;
-      font-size: 12px;
+    /* "Tomorrows MindMax"  Outfit SemiBold 17px white */
+    .hero-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 17px;
       font-weight: 600;
-      font-family: 'Inter', sans-serif;
+      color: #fff;
+      letter-spacing: 0.068px;
+      line-height: 18.36px;
       white-space: nowrap;
     }
-
-    /* ── History card ── */
-    .history-card {
-      background: #1a1429;
-      border-radius: 16px;
+    .hero-countdown-row {
       display: flex;
-      overflow: hidden;
-      cursor: pointer;
-      transition: opacity 0.15s;
+      align-items: center;
+      gap: 5px;
     }
-    .history-card:active { opacity: 0.75; }
+    /* "13h 45m 16s"  Outfit SemiBold 22px white */
+    .hero-countdown {
+      font-family: 'Outfit', sans-serif;
+      font-size: 22px;
+      font-weight: 600;
+      color: #fff;
+      line-height: 26.4px;
+    }
 
-    /* ── Tab button ── */
-    .tab-btn {
+    /* ─────────────────────────────────────────
+       CHAT  y=288
+    ───────────────────────────────────────── */
+    .chat-section {
+      padding: 16px 16px 0;
+    }
+    .chat-speaker {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-bottom: 12px;
+    }
+    /* avatar  32×32  r=42.857 → circular */
+    .avatar {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      overflow: hidden;
+      flex-shrink: 0;
+      background: #5a4a3a;
+    }
+    .avatar img, .avatar svg {
+      width: 100%; height: 100%;
+      object-fit: cover;
+    }
+    /* "Bertrand"  SF Pro Display Semibold 14px #b8b8b8  ls=0.28 */
+    .speaker-name {
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: #b8b8b8;
+      letter-spacing: 0.28px;
+      line-height: 19.18px;
+    }
+    /* Message body  SF Pro Display Regular 16px white  ls=0.16  lh=22.4 */
+    .chat-message {
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 16px;
+      font-weight: 400;
+      color: #fff;
+      letter-spacing: 0.16px;
+      line-height: 22.4px;
+    }
+    .chat-message u {
+      text-decoration-color: rgba(255,255,255,0.7);
+      text-underline-offset: 2px;
+      text-decoration-thickness: 1px;
+    }
+    .chat-para { display: block; }
+    .chat-para + .chat-para { margin-top: 9px; }
+
+    /* ─────────────────────────────────────────
+       PRIMARY BUTTON  x=24, y=580, w=355, h=56, r=32, bg=#c9c9c9
+    ───────────────────────────────────────── */
+    .button-area {
+      padding: 28px 24px 0;
+    }
+    .primary-btn {
+      width: 100%;
+      height: 56px;
+      background: #c9c9c9;
+      border-radius: 32px;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+    /* "Adjust tomorrow"  Outfit Medium 17px black */
+    .btn-text {
+      font-family: 'Outfit', sans-serif;
+      font-size: 17px;
+      font-weight: 500;
+      color: #000;
+      line-height: 18.36px;
+    }
+
+    /* ─────────────────────────────────────────
+       QUIZ SECTION  header y=668, card y=715, h=388, r=12
+    ───────────────────────────────────────── */
+    .quiz-section {
+      padding-top: 32px;
+    }
+    .section-header {
+      display: flex;
+      align-items: center;
+      padding: 8px 12px;
+      margin-bottom: 7px;
+    }
+    /* "Quiz of the Day"  Outfit SemiBold 20px white  ls=0.2 */
+    .section-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 20px;
+      font-weight: 600;
+      color: #fff;
+      letter-spacing: 0.2px;
+      line-height: 23.2px;
+    }
+    .disclosure {
+      margin-left: auto;
+      color: #c9c9c9;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 18px;
+      font-weight: 400;
+      line-height: 1;
+    }
+    .quiz-card {
+      margin: 0 12px;
+      height: 388px;
+      border-radius: 12px;
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(160deg, #1565c0 0%, #1976d2 40%, #42a5f5 100%);
+    }
+    .quiz-bg-img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    /* Overlay: bottom=0, h=102, bg=rgba(44,44,44,0.55) + blur */
+    .quiz-overlay {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 102px;
+      background: rgba(44, 44, 44, 0.55);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-radius: 0 0 12px 12px;
+    }
+    .quiz-overlay-inner {
+      padding: 16px 12px 0;
+    }
+    /* Quiz title  Outfit SemiBold 17px white  ls=0.068 */
+    .quiz-card-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 17px;
+      font-weight: 600;
+      color: #fff;
+      letter-spacing: 0.068px;
+      line-height: 18.36px;
+      margin-bottom: 6px;
+    }
+    .stats-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .stat-group {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    /* Stats text  Outfit SemiBold 12px white  ls=0.24 */
+    .stat-label {
+      font-family: 'Outfit', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      color: #fff;
+      letter-spacing: 0.24px;
+      line-height: 14.4px;
+    }
+    .stat-dot {
+      width: 2px; height: 2px;
+      background: #d9d9d9;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    /* Action icons  share x=316, ellipsis x=349 (from quiz overlay left) */
+    .quiz-actions {
+      position: absolute;
+      bottom: 16px;
+      right: 12px;
+      display: flex;
+      align-items: center;
+      gap: 17px;
+    }
+
+    /* ─────────────────────────────────────────
+       TAB BAR  — glass pill nav, tighter bottom
+    ───────────────────────────────────────── */
+    .tab-bar {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 108px;
+      /* Gradient fade from content into the nav zone */
+      background: linear-gradient(to bottom,
+        rgba(0,0,0,0) 0%,
+        rgba(0,0,0,0.55) 35%,
+        rgba(0,0,0,0.82) 100%);
+      pointer-events: none;
+    }
+    .tab-bar > * { pointer-events: auto; }
+
+    /* Glass pill */
+    .tab-items {
+      position: absolute;
+      top: 8px;
+      left: 12px; right: 12px;
+      height: 64px;
+      display: flex;
+      background: rgba(18, 18, 18, 0.62);
+      -webkit-backdrop-filter: blur(24px) saturate(1.6);
+      backdrop-filter: blur(24px) saturate(1.6);
+      border: 1px solid rgba(255, 255, 255, 0.10);
+      /* Inner top highlight + ambient shadow */
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.13),
+        0 6px 24px rgba(0, 0, 0, 0.45);
+      border-radius: 22px;
+      overflow: hidden;
+    }
+    .tab-item {
       flex: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
+      justify-content: center;
       gap: 2px;
-      cursor: pointer;
-      background: none;
-      border: none;
-      padding: 4px 0;
     }
+    .tab-item-icon {
+      width: 28px; height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    /* Tab labels  Outfit Regular 12px  ls=0.24 */
+    .tab-label {
+      font-family: 'Outfit', sans-serif;
+      font-size: 12px;
+      font-weight: 400;
+      color: #fff;
+      letter-spacing: 0.24px;
+      line-height: 14.4px;
+    }
+    .tab-label.muted { color: rgba(255,255,255,0.45); }
+
+    /* Home indicator — sits below the pill in the safe-area zone */
+    .home-indicator {
+      position: absolute;
+      top: 86px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 134px; height: 5px;
+      background: rgba(255,255,255,0.55);
+      border-radius: 100px;
+    }
+
+    /* bottom scroll pad so quiz card isn't hidden under tab bar */
+    .scroll-pad { height: 108px; }
+
+    /* ── Avatar speaking pulse ── */
+    .avatar.speaking {
+      animation: avatarSpeak 0.65s ease-out infinite;
+    }
+    @keyframes avatarSpeak {
+      0%   { box-shadow: 0 0 0 0   rgba(255,255,255,0.4); }
+      55%  { box-shadow: 0 0 0 4px rgba(255,255,255,0.12); }
+      100% { box-shadow: 0 0 0 0   rgba(255,255,255,0); }
+    }
+
+    /* ─────────────────────────────────────────
+       GLOSSARY TERMS
+    ───────────────────────────────────────── */
+    .glossary-term {
+      text-decoration: underline;
+      text-decoration-color: rgba(255,255,255,0.65);
+      text-underline-offset: 2px;
+      text-decoration-thickness: 1px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .glossary-term:active { opacity: 0.65; }
+
+    /* ─────────────────────────────────────────
+       GLOSSARY BACKDROP
+    ───────────────────────────────────────── */
+    .gs-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0);
+      z-index: 98;
+      pointer-events: none;
+      transition: background 0.35s ease;
+    }
+    .gs-backdrop.active {
+      background: rgba(0,0,0,0.52);
+      pointer-events: auto;
+    }
+
+    /* ─────────────────────────────────────────
+       GLOSSARY BOTTOM SHEET
+    ───────────────────────────────────────── */
+    .gs-sheet {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 1080px;
+      background: #141414;
+      border-radius: 24px 24px 0 0;
+      box-shadow: 0 -6px 40px rgba(0,0,0,0.75);
+      transform: translateY(1080px);
+      transition: transform 0.44s cubic-bezier(0.32, 0.72, 0, 1);
+      z-index: 100;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      will-change: transform;
+    }
+
+    /* drag handle */
+    .gs-handle-bar {
+      flex-shrink: 0;
+      display: flex;
+      justify-content: center;
+      padding: 14px 0 10px;
+      cursor: grab;
+      touch-action: none;
+      user-select: none;
+    }
+    .gs-handle-bar:active { cursor: grabbing; }
+    .gs-handle-nub {
+      width: 36px; height: 4px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 2px;
+    }
+
+    /* title row */
+    .gs-title-row {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      padding: 2px 20px 16px;
+    }
+    .gs-sheet-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 21px;
+      font-weight: 600;
+      color: #fff;
+      flex: 1;
+      letter-spacing: -0.2px;
+    }
+    .gs-x-btn {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.1);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .gs-x-btn:active { background: rgba(255,255,255,0.18); }
+
+    /* illustration */
+    .gs-illus {
+      flex-shrink: 0;
+      margin: 0 20px 18px;
+      height: 148px;
+      border-radius: 18px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .gs-illus-emoji {
+      font-size: 54px;
+      line-height: 1;
+      filter: drop-shadow(0 4px 16px rgba(0,0,0,0.45));
+    }
+
+    /* scrollable body */
+    .gs-body {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      padding: 0 20px 16px;
+    }
+    .gs-body::-webkit-scrollbar { display: none; }
+    .gs-sheet.is-collapsed .gs-body { overflow: hidden; }
+
+    .gs-summary-text {
+      font-family: 'Outfit', sans-serif;
+      font-size: 15px;
+      font-weight: 400;
+      color: rgba(255,255,255,0.72);
+      line-height: 1.6;
+      margin-bottom: 16px;
+    }
+
+    /* swipe hint */
+    .gs-hint {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 4px 0 10px;
+      cursor: pointer;
+      transition: opacity 0.25s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .gs-hint-text {
+      font-family: 'Outfit', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.3);
+      letter-spacing: 0.2px;
+    }
+    .gs-hint-arrow { animation: gsArrowBounce 1.8s ease-in-out infinite; }
+    @keyframes gsArrowBounce {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-3px); }
+    }
+    .gs-sheet.is-expanded .gs-hint { opacity: 0; pointer-events: none; }
+
+    /* expanded sections */
+    .gs-sections {
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease 0.15s;
+    }
+    .gs-sheet.is-expanded .gs-sections { opacity: 1; pointer-events: auto; }
+
+    .gs-divider {
+      height: 1px;
+      background: rgba(255,255,255,0.08);
+      margin: 4px 0 24px;
+    }
+    .gs-section { margin-bottom: 28px; }
+    .gs-section-label {
+      font-family: 'Outfit', sans-serif;
+      font-size: 10.5px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.38);
+      letter-spacing: 1.1px;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .gs-section-text {
+      font-family: 'Outfit', sans-serif;
+      font-size: 15px;
+      font-weight: 400;
+      color: rgba(255,255,255,0.78);
+      line-height: 1.6;
+    }
+    .gs-key-points { display: flex; flex-direction: column; gap: 12px; }
+    .gs-key-point { display: flex; gap: 12px; align-items: flex-start; }
+    .gs-kp-dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.32);
+      flex-shrink: 0;
+      margin-top: 7px;
+    }
+    .gs-kp-text {
+      font-family: 'Outfit', sans-serif;
+      font-size: 15px;
+      color: rgba(255,255,255,0.78);
+      line-height: 1.6;
+    }
+    .gs-dyk-box {
+      background: rgba(255,255,255,0.055);
+      border-radius: 14px;
+      border-left: 3px solid rgba(255,255,255,0.16);
+      padding: 14px 16px;
+    }
+
+    /* footer close button */
+    .gs-footer {
+      flex-shrink: 0;
+      padding: 12px 20px 40px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+    .gs-sheet.is-expanded .gs-footer { opacity: 1; pointer-events: auto; }
+    .gs-close-bottom {
+      width: 100%; height: 52px;
+      background: rgba(255,255,255,0.09);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 26px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 16px;
+      font-weight: 500;
+      color: #fff;
+      cursor: pointer;
+      letter-spacing: 0.1px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .gs-close-bottom:active { background: rgba(255,255,255,0.15); }
   </style>
 </head>
 <body>
-<div id="root"></div>
+<div class="device">
 
-<script type="text/babel">
-const { useState, useEffect, useRef } = React;
+  <!-- Dynamic Island -->
+  <div class="dynamic-island"></div>
 
-/* ─── Data ─────────────────────────────────────────────── */
-const HISTORY = [
-  { date: 'Wed, Mar 3', title: 'The Science of Cravings',   topics: 'Nutrition  •  Dopamine  •  Habit',       accent: '#8033e5' },
-  { date: 'Tue, Mar 4', title: 'The Power of Deep Sleep',   topics: 'Sleep  •  Recovery  •  Focus',            accent: '#1a99e5' },
-  { date: 'Mon, Mar 2', title: 'Rewiring Your Morning Mind', topics: 'Mindfulness  •  Habit  •  Routine',      accent: '#1acc80' },
-];
+  <!-- Top black gradient (above content, below status bar) -->
+  <div class="top-gradient"></div>
 
-const STREAK_DOTS = [
-  ...Array(7).fill(true),   // 7 completed
-  ...Array(10).fill(false), // 10 remaining
-  false,                    // bonus
-];
-
-/* ─── Sub-components ────────────────────────────────────── */
-
-function StatusBar() {
-  return (
-    <div style={{ position: 'relative', height: 50, display: 'flex', alignItems: 'flex-end', paddingBottom: 6 }}>
-      {/* Dynamic Island */}
-      <div style={{
-        position: 'absolute', top: 12, left: '50%', transform: 'translateX(-50%)',
-        width: 124, height: 34, background: '#000',
-        borderRadius: 20, border: '1px solid #1a1a1a', zIndex: 2,
-      }} />
-      {/* Left – time */}
-      <div style={{ position: 'absolute', left: 28, bottom: 8 }}>
-        <span style={{ color: '#fff', fontSize: 16, fontWeight: 600, letterSpacing: 0.3 }}>9:41</span>
+  <!-- Status Bar -->
+  <div class="status-bar">
+    <div class="status-time">9:41</div>
+    <div class="status-right">
+      <!-- Cellular  19.2×12.2px  (4 bars increasing height) -->
+      <svg width="19" height="12" viewBox="0 0 19 12" fill="white">
+        <rect x="0"    y="8.5" width="4" height="3.5" rx="0.5" opacity=".35"/>
+        <rect x="5"    y="5.5" width="4" height="6.5" rx="0.5" opacity=".55"/>
+        <rect x="10"   y="2.5" width="4" height="9.5" rx="0.5" opacity=".8"/>
+        <rect x="15"   y="0"   width="4" height="12"  rx="0.5"/>
+      </svg>
+      <!-- Wifi  17.1×12.3px -->
+      <svg width="17" height="12" viewBox="0 0 17 12" fill="none">
+        <circle cx="8.5" cy="10.8" r="1.3" fill="white"/>
+        <path d="M5.1 7.9a4.8 4.8 0 0 1 6.8 0" stroke="white" stroke-width="1.4" stroke-linecap="round"/>
+        <path d="M2 4.7a9 9 0 0 1 13 0" stroke="white" stroke-width="1.4" stroke-linecap="round" opacity=".75"/>
+      </svg>
+      <!-- Battery  25×13px border + 21×9px fill + 1.3×4px cap -->
+      <div class="battery">
+        <div class="battery-border"></div>
+        <div class="battery-fill"></div>
+        <div class="battery-cap"></div>
       </div>
-      {/* Right – icons */}
-      <div style={{ position: 'absolute', right: 20, bottom: 8, display: 'flex', gap: 6, alignItems: 'center' }}>
-        {/* Signal */}
-        <svg width="17" height="12" viewBox="0 0 17 12" fill="white">
-          <rect x="0"   y="8" width="3" height="4" rx="1"/>
-          <rect x="4.5" y="5" width="3" height="7" rx="1"/>
-          <rect x="9"   y="2" width="3" height="10" rx="1"/>
-          <rect x="13.5" y="0" width="3" height="12" rx="1"/>
-        </svg>
-        {/* Wi-Fi */}
-        <svg width="16" height="11" viewBox="0 0 16 11" fill="white">
-          <path d="M8 2.5C10.2 2.5 12.2 3.4 13.7 4.9L15.1 3.5C13.2 1.6 10.7.5 8 .5S2.8 1.6.9 3.5l1.4 1.4C3.8 3.4 5.8 2.5 8 2.5z"/>
-          <path d="M8 6c1.3 0 2.4.5 3.2 1.3L12.6 6C11.4 4.8 9.8 4 8 4S4.6 4.8 3.4 6l1.4 1.3C5.6 6.5 6.7 6 8 6z"/>
-          <circle cx="8" cy="10" r="1.5"/>
-        </svg>
-        {/* Battery */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <div style={{ width: 24, height: 12, border: '1.5px solid rgba(255,255,255,0.85)', borderRadius: 3.5, padding: '1.5px 2px' }}>
-            <div style={{ width: '100%', height: '100%', background: 'rgba(255,255,255,0.9)', borderRadius: 1.5 }} />
+    </div>
+  </div>
+
+  <!-- ══ Scrollable content ══ -->
+  <div class="scroll">
+
+    <!-- HERO CARD  y=60, h=212, r=12 -->
+    <div class="hero-section">
+      <div class="hero-card">
+        <!-- YouTube cloud video — muted autoplay loop, chrome cropped by scale -->
+        <iframe
+          class="hero-yt"
+          src="https://www.youtube.com/embed/KaWjVszmKOI?autoplay=1&mute=1&loop=1&playlist=KaWjVszmKOI&controls=0&rel=0&modestbranding=1&iv_load_policy=3&disablekb=1&fs=0&playsinline=1"
+          allow="autoplay; encrypted-media"
+          allowfullscreen
+          title="Cloud background"
+        ></iframe>
+        <!-- Frosted glass pill: left=84, top=60.5, w=211, h=91, r=21 -->
+        <div class="hero-overlay">
+          <div class="hero-title">Tomorrows MindMax</div>
+          <div class="hero-countdown-row">
+            <!-- lock.fill  SF Pro Semibold 16px — SVG substitute -->
+            <svg width="13" height="16" viewBox="0 0 13 16" fill="none">
+              <rect x="1" y="7" width="11" height="8" rx="2" fill="white"/>
+              <path d="M3.5 7.5V5a3 3 0 0 1 6 0v2.5" stroke="white" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+              <circle cx="6.5" cy="11.2" r="1.2" fill="#5a5a5a"/>
+            </svg>
+            <span class="hero-countdown" id="hero-countdown">13h 45m 16s</span>
           </div>
-          <div style={{ width: 2, height: 5, background: 'rgba(255,255,255,0.45)', borderRadius: 1 }} />
         </div>
       </div>
     </div>
-  );
-}
 
-function NavBar() {
-  return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 16px 10px' }}>
-      {/* Settings */}
-      <button style={{
-        width: 34, height: 34, borderRadius: 17,
-        background: 'rgba(111,111,111,0.24)', border: 'none',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        cursor: 'pointer', fontSize: 16, color: '#fff',
-      }}>⚙</button>
-
-      {/* Right side */}
-      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-        <button style={{
-          width: 34, height: 34, borderRadius: 17,
-          background: 'rgba(111,111,111,0.24)', border: 'none',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          cursor: 'pointer', fontSize: 15,
-        }}>📢</button>
-
-        <button style={{
-          height: 34, padding: '0 14px 0 10px',
-          borderRadius: 32,
-          background: 'linear-gradient(90deg, #f9d890 0%, #ee960f 100%)',
-          border: '1px solid rgba(253,240,188,0.5)',
-          display: 'flex', alignItems: 'center', gap: 5,
-          cursor: 'pointer',
-          color: '#292929', fontSize: 15, fontWeight: 600,
-          fontFamily: 'Outfit, sans-serif',
-          boxShadow: '0 2px 8px rgba(238,150,15,0.35)',
-        }}>
-          <span style={{ fontSize: 13, lineHeight: 1 }}>⭐</span>
-          Go Pro
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function GreetingCard() {
-  const fullText = "Great job today James. Excited for tomorrow's lesson.";
-  const [displayed, setDisplayed] = useState('');
-  const [done, setDone] = useState(false);
-  const [talking, setTalking] = useState(false);
-
-  useEffect(() => {
-    let i = 0;
-    const delay = setTimeout(() => {
-      const id = setInterval(() => {
-        i++;
-        setDisplayed(fullText.slice(0, i));
-        // pulse avatar on every ~4th character (word-ish rhythm)
-        if (i % 4 === 0) {
-          setTalking(true);
-          setTimeout(() => setTalking(false), 340);
-        }
-        if (i >= fullText.length) {
-          clearInterval(id);
-          setDone(true);
-        }
-      }, 38);
-      return () => clearInterval(id);
-    }, 600);
-    return () => clearTimeout(delay);
-  }, []);
-
-  return (
-    <div style={{
-      background: '#141414',
-      border: '1px solid rgba(255,255,255,0.08)',
-      borderRadius: 54,
-      padding: '6px 16px 6px 6px',
-      display: 'flex', alignItems: 'center', gap: 12,
-    }}>
-      {/* Avatar – pulses while typing */}
-      <img
-        src="avatar.png"
-        alt="avatar"
-        className={talking ? 'avatar-talking' : ''}
-        style={{
-          width: 61, height: 61, borderRadius: '50%',
-          objectFit: 'cover',
-          border: '1.5px solid rgba(255,255,255,0.1)',
-          flexShrink: 0,
-          transition: 'box-shadow 0.1s',
-        }}
-      />
-      {/* Text with typewriter + blinking cursor */}
-      <p style={{ color: '#fff', fontSize: 15, fontWeight: 500, lineHeight: 1.35, fontFamily: 'Outfit, sans-serif', minHeight: '2.7em' }}>
-        {displayed}
-        {!done && <span className="cursor" />}
-      </p>
-    </div>
-  );
-}
-
-/* ── Countdown card (always visible) ── */
-function CountdownCard({ timeLeft }) {
-  const pad = n => String(n).padStart(2, '0');
-  return (
-    <div style={{
-      background: 'linear-gradient(180deg, #753aff 0%, #5419dd 100%)',
-      borderRadius: 20, padding: '20px 20px 18px',
-      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
-    }}>
-      <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 12, fontWeight: 600, fontFamily: 'Outfit, sans-serif', letterSpacing: 0.3, textTransform: 'uppercase' }}>Daily MindMax</p>
-      <p style={{ color: '#fff', fontSize: 17, fontWeight: 600, fontFamily: 'Outfit, sans-serif' }}>✓&nbsp;&nbsp;Completed today</p>
-      <p style={{ color: 'rgba(200,170,255,0.9)', fontSize: 13, fontFamily: 'Outfit, sans-serif', marginTop: 2 }}>Next unlocks in</p>
-      <div style={{
-        background: 'rgba(38,13,89,0.6)', borderRadius: 14, padding: '11px 24px',
-        marginTop: 2, alignSelf: 'stretch', textAlign: 'center',
-      }}>
-        <span style={{
-          color: '#fff', fontSize: 30, fontWeight: 600,
-          fontFamily: 'Outfit, sans-serif', fontVariantNumeric: 'tabular-nums',
-          letterSpacing: 1, whiteSpace: 'nowrap', display: 'block',
-        }}>
-          {pad(timeLeft.h)}h {pad(timeLeft.m)}m {pad(timeLeft.s)}s
-        </span>
-      </div>
-    </div>
-  );
-}
-
-/* ── Scratch card – reveals tomorrow's lesson ── */
-function ScratchCard() {
-  const canvasRef = useRef(null);
-  const cardRef   = useRef(null);
-  const mouseDown = useRef(false);
-  const [revealed, setRevealed] = useState(false);
-  const [fading,   setFading]   = useState(false);
-
-  const LESSON = {
-    title: 'The Art of Deep Focus',
-    subtitle: 'Train your brain to enter flow state on demand',
-    topics: ['Focus', 'Mindfulness', 'Productivity'],
-    emoji: '🎯',
-  };
-
-  const initCanvas = () => {
-    const canvas = canvasRef.current;
-    const card   = cardRef.current;
-    if (!canvas || !card) return;
-    const { width, height } = card.getBoundingClientRect();
-    canvas.width  = width;
-    canvas.height = height;
-    const ctx = canvas.getContext('2d');
-
-    /* Silver gradient */
-    const g = ctx.createLinearGradient(0, 0, width, height);
-    g.addColorStop(0,    '#8e8e8e');
-    g.addColorStop(0.2,  '#d6d6d6');
-    g.addColorStop(0.45, '#b2b2b2');
-    g.addColorStop(0.7,  '#e4e4e4');
-    g.addColorStop(1,    '#9a9a9a');
-    ctx.fillStyle = g;
-    ctx.fillRect(0, 0, width, height);
-
-    /* Diagonal stripes */
-    ctx.save();
-    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
-    ctx.lineWidth = 1.5;
-    for (let i = -height; i < width + height; i += 10) {
-      ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i + height, height); ctx.stroke();
-    }
-    ctx.restore();
-
-    /* Noise */
-    ctx.save();
-    for (let i = 0; i < 400; i++) {
-      ctx.fillStyle = `rgba(0,0,0,${Math.random() * 0.06})`;
-      ctx.beginPath();
-      ctx.arc(Math.random() * width, Math.random() * height, Math.random() * 1.5, 0, Math.PI * 2);
-      ctx.fill();
-    }
-    ctx.restore();
-
-    /* Label */
-    ctx.save();
-    ctx.shadowColor = 'rgba(0,0,0,0.2)'; ctx.shadowBlur = 4;
-    ctx.fillStyle = 'rgba(50,25,0,0.55)';
-    ctx.font = `bold 14px 'Outfit', sans-serif`;
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText('✦  SCRATCH TO REVEAL  ✦', width / 2, height / 2 - 11);
-    ctx.font = `12px 'Outfit', sans-serif`;
-    ctx.fillStyle = 'rgba(50,25,0,0.4)';
-    ctx.fillText("Tomorrow's lesson awaits", width / 2, height / 2 + 11);
-    ctx.restore();
-  };
-
-  useEffect(() => { if (!revealed) requestAnimationFrame(initCanvas); }, []);
-
-  const getPos = (e) => {
-    const canvas = canvasRef.current;
-    const rect   = canvas.getBoundingClientRect();
-    const src    = e.touches ? e.touches[0] : e;
-    return {
-      x: (src.clientX - rect.left) * (canvas.width  / rect.width),
-      y: (src.clientY - rect.top)  * (canvas.height / rect.height),
-    };
-  };
-
-  const doScratch = (e) => {
-    const canvas = canvasRef.current;
-    if (!canvas || revealed) return;
-    const ctx = canvas.getContext('2d');
-    const { x, y } = getPos(e);
-    ctx.globalCompositeOperation = 'destination-out';
-    ctx.beginPath(); ctx.arc(x, y, 28, 0, Math.PI * 2); ctx.fill();
-    ctx.globalCompositeOperation = 'source-over';
-  };
-
-  const checkReveal = () => {
-    const canvas = canvasRef.current;
-    if (!canvas || revealed || fading) return;
-    const data = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
-    let gone = 0;
-    for (let i = 3; i < data.length; i += 4) { if (data[i] < 128) gone++; }
-    if (gone / (canvas.width * canvas.height) > 0.45) {
-      setFading(true);
-      setTimeout(() => setRevealed(true), 650);
-    }
-  };
-
-  return (
-    <div ref={cardRef} style={{ position: 'relative', borderRadius: 20, overflow: 'hidden', background: '#1a1429' }}>
-      {/* ── Lesson reveal content ── */}
-      {/* Image / hero area */}
-      <div style={{
-        background: 'linear-gradient(135deg, #1e0e4a 0%, #2d1b69 45%, #1a3a6e 100%)',
-        height: 130, position: 'relative', overflow: 'hidden',
-        display: 'flex', flexDirection: 'column',
-        alignItems: 'center', justifyContent: 'center', gap: 6,
-      }}>
-        <div style={{ position: 'absolute', top: -20, right: -20, width: 110, height: 110, borderRadius: '50%', background: 'rgba(117,58,255,0.2)' }} />
-        <div style={{ position: 'absolute', bottom: -30, left: 10, width: 90, height: 90, borderRadius: '50%', background: 'rgba(26,99,110,0.25)' }} />
-        <span style={{ fontSize: 50, lineHeight: 1, position: 'relative', zIndex: 1 }}>{LESSON.emoji}</span>
-        <span style={{ color: 'rgba(255,255,255,0.45)', fontSize: 11, fontWeight: 600, fontFamily: 'Outfit, sans-serif', letterSpacing: 1.5, textTransform: 'uppercase', position: 'relative', zIndex: 1 }}>Tomorrow's Lesson</span>
-      </div>
-
-      {/* Text + chips */}
-      <div style={{ padding: '14px 16px 16px' }}>
-        <p style={{ color: '#fff', fontSize: 17, fontWeight: 600, fontFamily: 'Outfit, sans-serif', lineHeight: 1.3, marginBottom: 6 }}>{LESSON.title}</p>
-        <p style={{ color: '#b8b8b8', fontSize: 14, fontFamily: 'Outfit, sans-serif', lineHeight: 1.35, marginBottom: 12 }}>{LESSON.subtitle}</p>
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'nowrap', overflow: 'hidden' }}>
-          {LESSON.topics.map(t => <span key={t} className="chip">{t}</span>)}
+    <!-- CHAT  y=288 -->
+    <div class="chat-section">
+      <div class="chat-speaker">
+        <!-- Avatar  32×32  circular — Bertrand portrait from Figma -->
+        <div class="avatar">
+          <img src="avatar.png" alt="Bertrand" />
         </div>
+        <!-- "Bertrand"  SF Pro Display Semibold 14px #b8b8b8 -->
+        <span class="speaker-name">Bertrand</span>
+      </div>
+      <!-- Message  SF Pro Display Regular 16px white  — exact Figma text, 2 paragraphs -->
+      <div class="chat-message">
+        <span class="chat-para">Great work completing today's MindMax James.&nbsp;&nbsp;We learnt about <span class="glossary-term" data-topic="confirmation-bias">confirmation bias</span> and <span class="glossary-term" data-topic="evidence-weighting">evidence weighting</span>, let me know if you want to go deeper in either.</span>
+        <span class="chat-para">Tomorrow we'll focus on something your brain does every morning - a hidden pattern that most people never notice, but once you do, you can't unsee see it.&nbsp;&nbsp;&nbsp;If you'd prefer to focus on something else tomorrow, just let me know.</span>
+      </div>
+    </div>
+
+    <!-- PRIMARY BUTTON  x=24, y=580, w=355, h=56, r=32 -->
+    <div class="button-area">
+      <button class="primary-btn">
+        <!-- wand.and.sparkles — 8-point pinched stars matching SF Symbol -->
+        <svg width="22" height="22" viewBox="0 0 22 22">
+          <!-- Wand body: diagonal capsule -->
+          <line x1="2.2" y1="19.8" x2="13.8" y2="8.2" stroke="black" stroke-width="2.5" stroke-linecap="round"/>
+          <!-- Large sparkle  cx=16.9 cy=-1.2 R=3  inner=±0.53 at 45° -->
+          <path fill="black" d="M16.9,-4.2 L17.43,-1.73 19.9,-1.2 17.43,-0.67 16.9,1.8 16.37,-0.67 13.9,-1.2 16.37,-1.73 Z"/>
+          <!-- Medium sparkle  cx=3.7 cy=1.0 R=2.2  inner=±0.39 -->
+          <path fill="black" d="M3.7,-1.2 L4.09,0.61 5.9,1.0 4.09,1.39 3.7,3.2 3.31,1.39 1.5,1.0 3.31,0.61 Z"/>
+          <!-- Small sparkle  cx=3.3 cy=8.2 R=1.6  inner=±0.28 -->
+          <path fill="black" d="M3.3,6.6 L3.58,7.92 4.9,8.2 3.58,8.48 3.3,9.8 3.02,8.48 1.7,8.2 3.02,7.92 Z"/>
+        </svg>
+        <span class="btn-text">Adjust tomorrow</span>
+      </button>
+    </div>
+
+    <!-- QUIZ SECTION  header y=668, card y=715 -->
+    <div class="quiz-section">
+      <div class="section-header">
+        <!-- "Quiz of the Day"  Outfit SemiBold 20px white -->
+        <span class="section-title">Quiz of the Day</span>
       </div>
 
-      {/* ── Scratch canvas overlay ── */}
-      {!revealed && (
-        <canvas
-          ref={canvasRef}
-          style={{
-            position: 'absolute', top: 0, left: 0,
-            cursor: 'crosshair', touchAction: 'none',
-            opacity: fading ? 0 : 1,
-            transition: fading ? 'opacity 0.65s ease-out' : 'none',
-            pointerEvents: fading ? 'none' : 'auto',
-          }}
-          onMouseDown={(e) => { mouseDown.current = true; doScratch(e); }}
-          onMouseMove={(e) => { if (mouseDown.current) { doScratch(e); checkReveal(); } }}
-          onMouseUp={() => { mouseDown.current = false; }}
-          onMouseLeave={() => { mouseDown.current = false; }}
-          onTouchStart={(e) => { e.preventDefault(); doScratch(e); }}
-          onTouchMove={(e) => { e.preventDefault(); doScratch(e); checkReveal(); }}
-          onTouchEnd={checkReveal}
+      <!-- Quiz card  w=378, h=388, r=12 -->
+      <div class="quiz-card">
+        <!-- YouTube-thumbnail background: closest public Unsplash substitute -->
+        <img
+          class="quiz-bg-img"
+          src="quiz-bg.png"
+          alt="Quiz background"
         />
-      )}
-    </div>
-  );
-}
 
-function RecipeCard() {
-  return (
-    <div style={{
-      background: '#141414',
-      border: '1px solid rgba(255,255,255,0.08)',
-      borderRadius: 12,
-      padding: '14px 16px',
-    }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-        <span style={{ color: '#fff', fontSize: 17, fontWeight: 600, fontFamily: 'Outfit, sans-serif' }}>Your daily MindMax recipe</span>
-        <button style={{
-          width: 32, height: 32, background: 'rgba(255,255,255,0.08)',
-          border: 'none', borderRadius: 16, cursor: 'pointer', color: '#fff', fontSize: 15,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>✎</button>
-      </div>
-      <p style={{ color: '#b8b8b8', fontSize: 15, fontFamily: 'Outfit, sans-serif', lineHeight: 1.35 }}>
-        James is interested in self development and wants to work on nutrition, smoking and mindfulness. He also enjoys a bit of news and an inspirational quote
-      </p>
-    </div>
-  );
-}
-
-function StreakModule() {
-  return (
-    <div style={{ background: '#1a1429', borderRadius: 16, padding: '16px 20px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 }}>
-        <span style={{ fontSize: 18 }}>🔥</span>
-        <span style={{ color: '#fff', fontSize: 17, fontWeight: 600, fontFamily: 'Outfit, sans-serif' }}>7 Day MindMax Streak</span>
-      </div>
-      <p style={{ color: '#b8b8b8', fontSize: 15, fontFamily: 'Outfit, sans-serif', marginBottom: 12 }}>
-        You've completed 7 days in a row
-      </p>
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'nowrap', overflow: 'hidden' }}>
-        {STREAK_DOTS.map((filled, i) => (
-          <div key={i}
-            className={filled ? 'dot-filled' : 'dot-empty'}
-            style={{
-              width: 12, height: 12, borderRadius: 6,
-              background: filled ? '#f2801a' : '#606060',
-              animationDelay: `${i * 0.07}s`,
-            }}
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function HistorySection() {
-  return (
-    <div>
-      <div style={{ paddingBottom: 10 }}>
-        <h2 style={{ color: '#fff', fontSize: 22, fontWeight: 600, fontFamily: 'Outfit, sans-serif' }}>MindMax History</h2>
-        <p style={{ color: '#b8b8b8', fontSize: 15, fontFamily: 'Outfit, sans-serif', marginTop: 3 }}>
-          Inspired by what's happening in the world
-        </p>
-      </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        {HISTORY.map((card, i) => (
-          <div key={i} className="history-card">
-            <div style={{ width: 8, background: card.accent, flexShrink: 0 }} />
-            <div style={{ padding: '14px 16px', flex: 1, minWidth: 0 }}>
-              <p style={{ color: '#8080a6', fontSize: 12, fontFamily: 'Outfit, sans-serif', marginBottom: 4 }}>{card.date}</p>
-              <p style={{ color: '#fff', fontSize: 15, fontWeight: 500, fontFamily: 'Outfit, sans-serif', marginBottom: 4 }}>{card.title}</p>
-              <p style={{ color: '#9980d9', fontSize: 13, fontFamily: 'Inter, sans-serif', fontWeight: 600 }}>{card.topics}</p>
-            </div>
-            <div style={{ padding: '14px 14px 14px 0', display: 'flex', alignItems: 'center' }}>
-              <span style={{ color: '#8080a6', fontSize: 16 }}>🔖</span>
+        <!-- Bottom overlay  h=102, rgba(44,44,44,0.55) + blur -->
+        <div class="quiz-overlay">
+          <div class="quiz-overlay-inner">
+            <!-- "Can You Decode Internet Culture?"  Outfit SemiBold 17px white -->
+            <div class="quiz-card-title">Can You Decode Internet Culture?</div>
+            <div class="stats-row">
+              <!-- checkmark.circle.fill  15px — filled white circle, dark knockout check -->
+              <div class="stat-group">
+                <svg width="18" height="18" viewBox="0 0 18 18">
+                  <circle cx="9" cy="9" r="8.5" fill="white"/>
+                  <path d="M4.5 9.5L7.5 12.5L13.5 6.5" stroke="rgba(30,30,30,0.6)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                </svg>
+                <span class="stat-label">263 played so far</span>
+              </div>
+              <div class="stat-dot"></div>
+              <!-- rosette.fill  15px — octagonal seal, white stroke + filled star -->
+              <div class="stat-group">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                  <path d="M9,1 L11.4,2.6 14.4,2.6 16,5.2 16,8.4 17.5,9 16,9.6 16,12.8 14.4,15.4 11.4,15.4 9,17 6.6,15.4 3.6,15.4 2,12.8 2,9.6 0.5,9 2,8.4 2,5.2 3.6,2.6 6.6,2.6 Z" stroke="white" stroke-width="1.2" stroke-linejoin="round"/>
+                  <path d="M9,5.2 L9.85,7.75 12.55,7.75 10.35,9.3 11.2,11.85 9,10.3 6.8,11.85 7.65,9.3 5.45,7.75 8.15,7.75 Z" fill="white"/>
+                </svg>
+                <span class="stat-label">Average score: 7/10</span>
+              </div>
             </div>
           </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function TabBar() {
-  const [active, setActive] = useState('Home');
-  const tabs = [
-    { label: 'Home',        icon: <HomeIcon /> },
-    { label: 'Create',      icon: <CreateIcon /> },
-    { label: 'My Learning', icon: <LearnIcon /> },
-  ];
-  return (
-    <div style={{
-      position: 'absolute', bottom: 0, left: 0, right: 0,
-      background: 'linear-gradient(to bottom, transparent, rgba(13,13,13,0.92) 38%, #000 70%)',
-    }}>
-      {/* Mini player */}
-      <div style={{ padding: '6px 12px 4px' }}>
-        <div style={{
-          background: '#292929', borderRadius: 12,
-          padding: '9px 14px',
-          display: 'flex', alignItems: 'center', gap: 12,
-        }}>
-          <div style={{
-            width: 40, height: 40, borderRadius: 8,
-            background: 'rgba(255,255,255,0.08)',
-            border: '1px solid rgba(0,0,0,0.12)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 22, flexShrink: 0,
-          }}>🎨</div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ color: '#fff', fontSize: 15, fontWeight: 500, fontFamily: 'Outfit, sans-serif', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>The AI Art Revolution</p>
-            <p style={{ color: '#b8b8b8', fontSize: 13, fontFamily: 'Outfit, sans-serif' }}>Can AI Make Real Art?</p>
+          <!-- Action icons: share x≈316, ellipsis x≈349 from quiz overlay left -->
+          <div class="quiz-actions">
+            <!-- square.and.arrow.up  SF Pro Semibold 15px white -->
+            <svg width="17" height="20" viewBox="0 0 17 20" fill="none">
+              <path d="M8.5 1v12" stroke="white" stroke-width="1.6" stroke-linecap="round"/>
+              <path d="M8.5 1L4.5 5M8.5 1l4 4" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M1 11v6a1 1 0 0 0 1 1h13a1 1 0 0 0 1-1v-6" stroke="white" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+            <!-- ellipsis  SF Pro Semibold 15px white -->
+            <svg width="17" height="20" viewBox="0 0 17 20" fill="none">
+              <circle cx="2.5" cy="10" r="1.5" fill="white"/>
+              <circle cx="8.5" cy="10" r="1.5" fill="white"/>
+              <circle cx="14.5" cy="10" r="1.5" fill="white"/>
+            </svg>
           </div>
-          <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#fff', fontSize: 22, lineHeight: 1, padding: '0 2px' }}>▶</button>
         </div>
       </div>
 
-      {/* Tabs */}
-      <div style={{ display: 'flex', padding: '4px 0 0' }}>
-        {tabs.map(t => (
-          <button key={t.label} className="tab-btn" onClick={() => setActive(t.label)}>
-            <span style={{ color: active === t.label ? '#fff' : 'rgba(255,255,255,0.45)', display: 'flex' }}>
-              {t.icon}
-            </span>
-            <span style={{ color: active === t.label ? '#fff' : 'rgba(255,255,255,0.45)', fontSize: 12, fontFamily: 'Outfit, sans-serif' }}>{t.label}</span>
-          </button>
-        ))}
+      <div class="scroll-pad"></div>
+    </div><!-- /quiz-section -->
+  </div><!-- /scroll -->
+
+  <!-- ══════════════════════════════════════
+       TAB BAR  402×171  y=1036 from top
+       Gradient + Lesson Player + Tabs + Home Indicator
+  ══════════════════════════════════════ -->
+  <div class="tab-bar">
+
+
+    <!-- Tab items  y=2669, relative to tab bar y=2581: top=88 -->
+    <div class="tab-items">
+
+      <!-- Home — ACTIVE  house.fill  SF Pro Semibold 17px white -->
+      <div class="tab-item">
+        <div class="tab-item-icon">
+          <!-- house.fill -->
+          <svg width="25" height="22" viewBox="0 0 25 22" fill="white">
+            <path d="M1.5 10.5L12.5 2L23.5 10.5V21H16.5V15H8.5V21H1.5V10.5Z"/>
+          </svg>
+        </div>
+        <span class="tab-label">Home</span>
       </div>
 
-      {/* Home indicator */}
-      <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0 10px' }}>
-        <div style={{ width: 134, height: 5, background: '#fff', borderRadius: 100 }} />
+      <!-- Create — inactive  plus.square  SF Pro Semibold 17px 50% white -->
+      <div class="tab-item">
+        <div class="tab-item-icon">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+            <rect x="1.5" y="1.5" width="19" height="19" rx="4" stroke="rgba(255,255,255,0.5)" stroke-width="1.6"/>
+            <path d="M11 7v8M7 11h8" stroke="rgba(255,255,255,0.5)" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <span class="tab-label muted">Create</span>
       </div>
+
+      <!-- My Learning — inactive  graduationcap.fill  SF Pro Semibold 17px 50% white -->
+      <div class="tab-item">
+        <div class="tab-item-icon">
+          <svg width="28" height="22" viewBox="0 0 28 22" fill="none">
+            <path d="M14 2L2 8.5L14 15L26 8.5L14 2Z" stroke="rgba(255,255,255,0.5)" stroke-width="1.6" stroke-linejoin="round" fill="rgba(255,255,255,0.08)"/>
+            <path d="M6.5 12.5v5.5S9.5 21 14 21s7.5-3 7.5-3v-5.5" stroke="rgba(255,255,255,0.5)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M26 8.5v6" stroke="rgba(255,255,255,0.5)" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <span class="tab-label muted">My Learning</span>
+      </div>
+
+    </div><!-- /tab-items -->
+
+    <!-- Home indicator  x=129, w=144, h=5, r=100  white -->
+    <div class="home-indicator"></div>
+
+  </div><!-- /tab-bar -->
+
+
+  <!-- ── Glossary backdrop ── -->
+  <div id="gs-backdrop" class="gs-backdrop"></div>
+
+  <!-- ── Glossary bottom sheet ── -->
+  <div id="gs-sheet" class="gs-sheet" aria-modal="true" role="dialog">
+
+    <!-- Drag handle -->
+    <div id="gs-handle-bar" class="gs-handle-bar">
+      <div class="gs-handle-nub"></div>
     </div>
-  );
-}
 
-/* ─── SVG Tab Icons ─────────────────────────────────────── */
-function HomeIcon() {
-  return (
-    <svg width="24" height="22" viewBox="0 0 24 22" fill="currentColor">
-      <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
-    </svg>
-  );
-}
-function CreateIcon() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-      <rect x="1" y="1" width="20" height="20" rx="4"/>
-      <line x1="11" y1="6" x2="11" y2="16"/>
-      <line x1="6" y1="11" x2="16" y2="11"/>
-    </svg>
-  );
-}
-function LearnIcon() {
-  return (
-    <svg width="24" height="22" viewBox="0 0 24 22" fill="currentColor">
-      <path d="M12 3L1 9l4 2.18V17h14v-5.82L23 9 12 3zm6 12H6v-4.5l6 3.27 6-3.27V15zm0-7.15L12 11.17 6 7.85 12 5l6 2.85z"/>
-    </svg>
-  );
-}
+    <!-- Title + close -->
+    <div class="gs-title-row">
+      <span id="gs-title" class="gs-sheet-title"></span>
+      <button id="gs-x-btn" class="gs-x-btn" aria-label="Close">
+        <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+          <path d="M1 1l9 9M10 1L1 10" stroke="rgba(255,255,255,0.8)" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
 
-/* ─── Main App ──────────────────────────────────────────── */
-function MindMaxHome() {
-  const [timeLeft, setTimeLeft] = useState({ h: 11, m: 29, s: 34 });
+    <!-- Illustration -->
+    <div id="gs-illus" class="gs-illus">
+      <span id="gs-emoji" class="gs-illus-emoji"></span>
+    </div>
 
-  useEffect(() => {
-    const id = setInterval(() => {
-      setTimeLeft(({ h, m, s }) => {
-        s--;
-        if (s < 0) { s = 59; m--; }
-        if (m < 0) { m = 59; h--; }
-        if (h < 0) return { h: 0, m: 0, s: 0 };
-        return { h, m, s };
-      });
-    }, 1000);
-    return () => clearInterval(id);
-  }, []);
+    <!-- Scrollable body -->
+    <div id="gs-body" class="gs-body">
+      <p id="gs-summary" class="gs-summary-text"></p>
 
-  return (
-    <div className="phone">
-      <StatusBar />
-      <NavBar />
+      <!-- Swipe / tap hint -->
+      <div id="gs-hint" class="gs-hint">
+        <span class="gs-hint-text">Swipe up for more</span>
+        <svg class="gs-hint-arrow" width="12" height="7" viewBox="0 0 12 7" fill="none">
+          <path d="M11 6L6 1.5 1 6" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
 
-      <div className="scroll-area" style={{ padding: '0 13px' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingBottom: 180 }}>
-          <GreetingCard />
-          <CountdownCard timeLeft={timeLeft} />
-          <ScratchCard />
-          <RecipeCard />
-          <StreakModule />
-          <HistorySection />
+      <!-- Expanded sections (hidden when collapsed) -->
+      <div id="gs-sections" class="gs-sections">
+        <div class="gs-divider"></div>
+
+        <div class="gs-section">
+          <div class="gs-section-label">Key Points</div>
+          <div id="gs-key-points" class="gs-key-points"></div>
+        </div>
+
+        <div class="gs-section">
+          <div class="gs-section-label">Why It Matters</div>
+          <p id="gs-why-matters" class="gs-section-text"></p>
+        </div>
+
+        <div class="gs-section">
+          <div class="gs-section-label">Did You Know</div>
+          <div class="gs-dyk-box">
+            <p id="gs-dyk" class="gs-section-text"></p>
+          </div>
         </div>
       </div>
-
-      <TabBar />
     </div>
-  );
-}
 
-ReactDOM.createRoot(document.getElementById('root')).render(<MindMaxHome />);
+    <!-- Footer close (expanded only) -->
+    <div class="gs-footer">
+      <button id="gs-close-bottom" class="gs-close-bottom">Close</button>
+    </div>
+
+  </div><!-- /gs-sheet -->
+
+</div><!-- /device -->
+
+<script>
+/* ── Countdown to midnight ───────────────────────── */
+(function () {
+  const el = document.getElementById('hero-countdown');
+  function tick() {
+    const now  = new Date();
+    const midnight = new Date(now);
+    midnight.setHours(24, 0, 0, 0);
+    let secs = Math.max(0, Math.floor((midnight - now) / 1000));
+    const h = Math.floor(secs / 3600);
+    secs %= 3600;
+    const m = Math.floor(secs / 60);
+    const s = secs % 60;
+    el.textContent = `${h}h ${m}m ${s}s`;
+  }
+  tick();
+  setInterval(tick, 1000);
+}());
+
+(function () {
+
+  /* ── Glossary data ──────────────────────────── */
+  const glossary = {
+    'confirmation-bias': {
+      title:    'Confirmation Bias',
+      emoji:    '🧠',
+      image:    'confirmation-bias.png',
+      gradient: 'linear-gradient(145deg, #120040 0%, #2a0d6e 55%, #0d2a5a 100%)',
+      summary:  'The tendency to search for, interpret, and recall information in a way that confirms your pre-existing beliefs — while giving less attention to anything that contradicts them.',
+      keyPoints: [
+        'You unconsciously favour information that matches what you already believe.',
+        'It affects how you read news, assess risks, and form opinions about the world.',
+        'Even experts are susceptible — awareness is the first step to countering it.'
+      ],
+      whyItMatters: 'When left unchecked, confirmation bias leads to poor decisions, polarised thinking, and an inability to update your views with new evidence. Recognising it in yourself is a genuine superpower.',
+      didYouKnow:   'The term was coined by psychologist Peter Wason in 1960 after his famous card selection experiment — one of the most replicated studies in all of cognitive psychology.'
+    },
+    'evidence-weighting': {
+      title:    'Evidence Weighting',
+      emoji:    '⚖️',
+      image:    'evidence-weighting.png',
+      gradient: 'linear-gradient(145deg, #001a12 0%, #003d2a 55%, #0d3018 100%)',
+      summary:  'How your brain assigns importance to different pieces of information — often driven more by emotion, repetition, and source credibility than by the actual strength of the evidence.',
+      keyPoints: [
+        'Not all evidence is equal — vivid or emotional examples feel more convincing than dry statistics.',
+        'Repetition of a claim can make it feel more credible, even without any new proof.',
+        'Critical thinkers actively check source quality before accepting claims at face value.'
+      ],
+      whyItMatters: 'Understanding how you weight evidence helps you make better decisions, spot manipulation, and reason more clearly under uncertainty.',
+      didYouKnow:   'People consistently find a single personal story more persuasive than statistics covering thousands of cases — a quirk known as the "identifiable victim effect."'
+    }
+  };
+
+  /* ── DOM refs ───────────────────────────────── */
+  const sheet     = document.getElementById('gs-sheet');
+  const backdrop  = document.getElementById('gs-backdrop');
+  const handleBar = document.getElementById('gs-handle-bar');
+  const body      = document.getElementById('gs-body');
+
+  /* ── Position constants ─────────────────────── */
+  const SHEET_H     = 1080;
+  const COLLAPSED_Y = 700;   // shows ~380 px (~44% of 870px device)
+  const POS = { hidden: SHEET_H, collapsed: COLLAPSED_Y, expanded: 0 };
+
+  /* ── State ──────────────────────────────────── */
+  let state = 'hidden';
+
+  /* ── Helpers ────────────────────────────────── */
+  function currentY() {
+    return new DOMMatrix(getComputedStyle(sheet).transform).m42;
+  }
+
+  function animateTo(next) {
+    sheet.style.transition = 'transform 0.44s cubic-bezier(0.32, 0.72, 0, 1)';
+    sheet.style.transform  = `translateY(${POS[next]}px)`;
+    sheet.classList.toggle('is-collapsed', next === 'collapsed');
+    sheet.classList.toggle('is-expanded',  next === 'expanded');
+    backdrop.classList.toggle('active', next !== 'hidden');
+    if (next === 'collapsed') body.scrollTop = 0;
+    state = next;
+  }
+
+  function dismiss() { animateTo('hidden'); }
+
+  /* ── Open sheet ─────────────────────────────── */
+  function openSheet(topic) {
+    const d = glossary[topic];
+    if (!d) return;
+
+    document.getElementById('gs-title').textContent = d.title;
+    const illus = document.getElementById('gs-illus');
+    const emojiEl = document.getElementById('gs-emoji');
+    if (d.image) {
+      illus.style.background = `url('${d.image}') center/cover no-repeat`;
+      emojiEl.textContent = '';
+    } else {
+      illus.style.background = d.gradient;
+      emojiEl.textContent = d.emoji;
+    }
+    document.getElementById('gs-summary').textContent     = d.summary;
+    document.getElementById('gs-why-matters').textContent = d.whyItMatters;
+    document.getElementById('gs-dyk').textContent         = d.didYouKnow;
+    document.getElementById('gs-key-points').innerHTML    =
+      d.keyPoints.map(pt =>
+        `<div class="gs-key-point"><div class="gs-kp-dot"></div><span class="gs-kp-text">${pt}</span></div>`
+      ).join('');
+
+    /* position off-screen, then slide in on next two frames */
+    sheet.style.transition = 'none';
+    sheet.style.transform  = `translateY(${POS.hidden}px)`;
+    sheet.classList.remove('is-collapsed', 'is-expanded');
+    backdrop.classList.remove('active');
+    body.scrollTop = 0;
+
+    requestAnimationFrame(() => requestAnimationFrame(() => animateTo('collapsed')));
+  }
+
+  /* ── Drag gesture ───────────────────────────── */
+  let dragging = false, startClientY = 0, startSheetY = 0;
+  let lastClientY = 0, lastTime = 0, velocity = 0;
+
+  function onDragStart(clientY) {
+    dragging     = true;
+    startClientY = clientY;
+    startSheetY  = currentY();
+    lastClientY  = clientY;
+    lastTime     = Date.now();
+    velocity     = 0;
+    sheet.style.transition = 'none';
+  }
+
+  function onDragMove(clientY) {
+    if (!dragging) return;
+    const now = Date.now(), dt = now - lastTime;
+    if (dt > 0) velocity = (clientY - lastClientY) / dt;
+    lastClientY = clientY;
+    lastTime    = now;
+    const y = Math.max(0, startSheetY + (clientY - startClientY));
+    sheet.style.transform = `translateY(${y}px)`;
+  }
+
+  function onDragEnd() {
+    if (!dragging) return;
+    dragging = false;
+    const y = currentY(), v = velocity;
+
+    if (state === 'collapsed') {
+      if (y < COLLAPSED_Y - 55 || v < -0.45) animateTo('expanded');
+      else if (y > COLLAPSED_Y + 80 || v > 0.70) animateTo('hidden');
+      else animateTo('collapsed');
+    } else {
+      if (y > 90 || v > 0.65) animateTo('collapsed');
+      else animateTo('expanded');
+    }
+  }
+
+  /* touch */
+  handleBar.addEventListener('touchstart', e => onDragStart(e.touches[0].clientY), { passive: true });
+  handleBar.addEventListener('touchmove',  e => { e.preventDefault(); onDragMove(e.touches[0].clientY); }, { passive: false });
+  handleBar.addEventListener('touchend',   onDragEnd);
+
+  /* mouse (desktop preview) */
+  handleBar.addEventListener('mousedown', e => onDragStart(e.clientY));
+  window.addEventListener('mousemove',  e => { if (dragging) onDragMove(e.clientY); });
+  window.addEventListener('mouseup',    () => { if (dragging) onDragEnd(); });
+
+  /* swipe up on body content when collapsed */
+  let bodyTouchStartY = 0;
+  body.addEventListener('touchstart', e => { bodyTouchStartY = e.touches[0].clientY; }, { passive: true });
+  body.addEventListener('touchend',   e => {
+    if (state !== 'collapsed') return;
+    if (bodyTouchStartY - e.changedTouches[0].clientY > 45) animateTo('expanded');
+  }, { passive: true });
+
+  /* ── Controls ───────────────────────────────── */
+  backdrop.addEventListener('click', dismiss);
+  document.getElementById('gs-x-btn').addEventListener('click', dismiss);
+  document.getElementById('gs-close-bottom').addEventListener('click', dismiss);
+  document.getElementById('gs-hint').addEventListener('click', () => {
+    if (state === 'collapsed') animateTo('expanded');
+  });
+
+  /* ── Glossary terms — delegation survives streaming rebuilds ── */
+  document.querySelector('.chat-message').addEventListener('click', e => {
+    const term = e.target.closest('.glossary-term');
+    if (term) openSheet(term.dataset.topic);
+  });
+
+  /* ── Chat text speaking stream ── */
+  const chatMsg  = document.querySelector('.chat-message');
+  const avatarEl = document.querySelector('.avatar');
+  const origHTML = chatMsg.innerHTML;
+  // Build full DOM in a temp element so all spans/styles are present from the start
+  const tmpEl = document.createElement('div');
+  tmpEl.innerHTML = origHTML;
+  // Collect every text node in document order, saving its content then clearing it
+  const textSegs = [];
+  (function collect(node) {
+    if (node.nodeType === 3) {
+      textSegs.push({ node, full: node.textContent });
+      node.textContent = '';
+    } else { node.childNodes.forEach(collect); }
+  }(tmpEl));
+  const totalChars = textSegs.reduce((s, t) => s + t.full.length, 0);
+  const BASE_MS = Math.round(4000 / Math.max(totalChars, 1));
+  // Reserve space then swap in the pre-built (empty-text) DOM
+  chatMsg.style.minHeight = chatMsg.offsetHeight + 'px';
+  chatMsg.innerHTML = '';
+  while (tmpEl.firstChild) chatMsg.appendChild(tmpEl.firstChild);
+  avatarEl.classList.add('speaking');
+  let segIdx = 0, charIdx = 0;
+  function streamStep() {
+    // Advance past any fully-revealed segments
+    while (segIdx < textSegs.length && charIdx >= textSegs[segIdx].full.length) {
+      segIdx++; charIdx = 0;
+    }
+    if (segIdx >= textSegs.length) {
+      chatMsg.innerHTML = origHTML;
+      chatMsg.style.minHeight = '';
+      avatarEl.classList.remove('speaking');
+      return;
+    }
+    textSegs[segIdx].node.textContent = textSegs[segIdx].full.slice(0, ++charIdx);
+    setTimeout(streamStep, BASE_MS);
+  }
+  setTimeout(streamStep, 700);
+
+}());
 </script>
 </body>
 </html>
